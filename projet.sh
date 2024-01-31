@@ -1,72 +1,102 @@
 #!/bin/bash
 
-# Dossiers à vérifier
+#vérification des dossiers 'temp' et 'images'
+
 dossier_temp="temp"
 dossier_images="images"
 
-# Création des dossiers 'temp' et 'images' si nécessaire
+#création des dossiers s'ils n'existent pas
+
 [ -d "$dossier_temp" ] && rm -rf "$dossier_temp"/* || mkdir "$dossier_temp"
 [ ! -d "$dossier_images" ] && mkdir "$dossier_images"
 
-# Emplacements des exécutables C
-# executable_t="chemin/vers/executable_t"
-# executable_s="chemin/vers/executable_s"
+#éxécutables en langage C
 
-# Gestion de l'option d'aide (-h)
-for arg in "$@"; do
-    if [ "$arg" = "-h" ]; then
-        echo "Usage: $0 chemin_du_fichier_csv traitement1 [traitement2 ...]"
-        echo "Options de traitement :"
-        echo "- traitement1 : Description du traitement1"
-        echo "- traitement2 : Description du traitement2"
-        exit 0
-    fi
+executable_t="$dossier_progc/executable_t"
+executable_s="$dossier_progc/executable_s"
+
+#Message d'aide expliquant les options (option -h)
+
+for arg in "$@" ; do
+if [ "$arg" = "-h" ] ; then
+echo "Format d'utilisation : $0 chemin_du_fichier_csv traitement1 traitement2..."
+echo "Les différentes options de traitement :"
+echo "-traitement [D1] :.............................."
+echo "-traitement [D2] :.............................."
+echo "-traitement [L] :..............................."
+echo "-traitement [T] :..............................."
+echo "-traitement [S] :..............................."
+exit 0
+fi
 done
 
-# Vérification des arguments
-if [ "$#" -lt 2 ]; then
-    echo "Usage: $0 chemin_du_fichier_csv traitement1 [traitement2 ...]"
-    exit 1
+#Vérification du nombre d'arguments
+
+if [ "$#" -lt 2 ] ; then
+echo "Rappel du format d'usage : $0 chemin_du_fichier_csv traitement1 traitement2..."
+exit 1
 fi
 
-# Début de la mesure du temps
-start_time=$(date +%s)
+#Début de la mesure du temps d'éxécution
 
-# Implémentation des traitements
+temps_debut=$(date +%s)
+
+#Compilation des programmes C s'ils ne sont pas
+
+#Chemin du fichier CSV
+
+chemin_fichier_csv="$1"
+
+#Traitement en fonction du choix de l'utilisateur
+
 case "$2" in
-  -d1)
-    # Traitement D1 avec Shell
-    awk -F ';' '{print $5, ";" , $6}' "$1" | sort -u | awk -F ';' '{print $2}' | sort | uniq -c | sort -nt " " -k1 | tail  -10 | awk '{print """$2, $3""", $1}' > "$dossier_temp/resultat_d1.txt"
 
-    cut -d ' ' -f1,2 "$dossier_temp/resultat_d1.txt" | tac
+#Traitement [D1]
 
-    gnuplot "graph.gp"
-    ;;
+-D1)  
+awk -F ';' '!seen[$1 FS $6]++ {print $1 FS $6}' data.csv | cut -d';' -f2 | sort | uniq -c | sort -rn | head -10 | awk '{print $2, $3, ";",$1}' | tac > "$dossier_temp/resultats_d1.txt"
 
-  -d2)
-    # Vérification de l'existence du fichier CSV
-    if [ ! -f "$1" ]; then
-        echo "Le fichier CSV $1 n'existe pas."
-        exit 1
-    fi
+awk '{print $1, $2}' "$dossier_temp/resultats_d1.txt" | cat  
 
-    # Traitement D2 avec Shell
-    awk -F ';' '{print $6, ";" , $5}' "$1" | sort | uniq -c | sort -nrk1 | head -n 10 | awk '{print """$2, $3""", $1}' > "$dossier_temp/resultat_d2.txt"
+gnuplot "graphique_d1.gp" ;;
 
-    # Affichage du résultat
-    cut -d ' ' -f1,2 "$dossier_temp/resultat_d2.txt" | tac
+#Traitement [D2]
 
-    # Génération du graphique avec Gnuplot
-    gnuplot "graph.gp"
-    ;;
+-D2)
+awk -F ';' '{somme_distance[$6]+=$5} END { for (personne in somme_distance) print personne, somme_distance[personne] }' data.csv | sort -rnt' ' -k3 | head -10 | awk '{print ""$1, $2"", ";", $3}' | tac > "$dossier_temp/resultats_d2.txt"
 
-  *)
-    echo "Option de traitement non reconnue."
-    ;;
+awk '{print $1, $2}' "$dossier_temp/resultats_d2.txt" | cat  
+ 
+gnuplot "graphique_d2.gp" ;;
+
+#Traitement [L]
+
+-L)
+awk -F ';' '{somme_etapes[$1]+=$5} END { for (trajet in somme_etapes) print trajet, somme_etapes[trajet] }' data.csv | sort -rnt' ' -k2 | head -n 10 | sort -n -k1 | awk '{print $1, ";", $2}' > "$dossier_temp/resultats_L.txt"
+
+awk '{print $1}' "$dossier_temp/resultats_L.txt" | cat
+
+gnuplot "graphique_l.gp" ;;
+
+#Traitement [S]
+
+-S)
+
+
+awk -F";" ' FNR > 1 {print $1 ";" $5}' "$fichier_d_entrer" > temp/s_intermediaire_calcul.csv
+./progc/ttaitement_s1
+./progc/traitement_s2
+gnuplot "graphique_s.gp" ;;
+
+
+#Traitement [T]
+
+-T)
+
 
 esac
 
-# Fin de la mesure du temps
-end_time=$(date +%s)
-execution_time=$((end_time - start_time))
-echo "Temps d'exécution total : $execution_time secondes."
+temps_fin=$(date +%s)
+temps_execution=$((temps_fin - temps_debut))
+echo "Temps d'éxécution : $temps_execution secondes"
+
