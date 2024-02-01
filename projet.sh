@@ -83,8 +83,8 @@ gnuplot "graphique_l.gp" ;;
 -S)
 
 
-awk -F";" ' FNR > 1 {print $1 ";" $5}' "$fichier_d_entrer" > temp/s_intermediaire_calcul.csv
-./progc/ttaitement_s1
+awk -F";" ' FNR > 1 {print $1 ";" $5}' "$dossier_temp" > data_temp_s.csv
+./progc/traitement_s1
 ./progc/traitement_s2
 gnuplot "graphique_s.gp" ;;
 
