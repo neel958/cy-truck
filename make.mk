@@ -20,7 +20,7 @@ $(EXECUTABLE): $(OBJ_C)
     $(CC) $(CFLAGS) -o $@ $^
 
 %.o: %.c
-    $(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
     rm -f $(OBJ_C) $(EXECUTABLE)

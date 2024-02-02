@@ -18,7 +18,7 @@ int main() {
     }
 
     int id_maximum = -1;
-    struct trajet *trajet = NULL;
+    struct trajet *trajet_1 = NULL;
     int z = 1; // nombre de ligne
 
     char line[100];
@@ -42,39 +42,39 @@ int main() {
             }
 
             // Réallouer dynamiquement la mémoire si nécessaire
-            trajet = realloc(trajet, (id_maximum + 1) * sizeof(struct trajet));
+            trajet_1 = realloc(trajet_1, (id_maximum + 1) * sizeof(struct trajet));
 
             // Initialiser
-            if (trajet[id].count == 0) {
-                trajet[id].id = id;
-                trajet[id].min = value;
-                trajet[id].max = value;
-                trajet[id].somme = value;
-                trajet[id].count = 1;
+            if (trajet_1[id].count == 0) {
+                trajet_1[id].id = id;
+                trajet_1[id].min = value;
+                trajet_1[id].max = value;
+                trajet_1[id].somme = value;
+                trajet_1[id].count = 1;
             } 
             else {
-                if (value < trajet[id].min) {
-                    trajet[id].min = value;
+                if (value < trajet_1[id].min) {
+                    trajet_1[id].min = value;
                 }
-                if (value > trajet[id].max) {
-                    trajet[id].max = value;
+                if (value > trajet_1[id].max) {
+                    trajet_1[id].max = value;
                 }
-                trajet[id].somme += value;
-                trajet[id].count++;
+                trajet_1[id].somme += value;
+                trajet_1[id].count++;
             }
         }
     }
 
     for (int i = 0; i <= id_maximum; i++) {
-        if (trajet[i].count > 0) {
-            trajet[i].moyenne = trajet[i].somme / trajet[i].count;
-            trajet[i].difference = trajet[i].max - trajet[i].min;
-            fprintf(f2, "%d;%.3f;%.2f;%.3f;%.3f\n", trajet[i].id, trajet[i].min, trajet[i].moyenne, trajet[i].max, trajet[i].difference);
+        if (trajet_1[i].count > 0) {
+            trajet_1[i].moyenne = trajet_1[i].somme / trajet_1[i].count;
+            trajet_1[i].difference = trajet_1[i].max - trajet_1[i].min;
+            fprintf(f2, "%d;%.3f;%.2f;%.3f;%.3f\n", trajet_1[i].id, trajet_1[i].min, trajet_1[i].moyenne, trajet_1[i].max, trajet_1[i].difference);
         }
     }
 
     // Libérer la mémoire allouée dynamiquement
-    free(trajet);
+    free(trajet_1);
 
     fclose(f1);
     fclose(f2);
