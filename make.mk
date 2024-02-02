@@ -17,15 +17,15 @@ EXECUTABLE = mon_programme
 all: $(EXECUTABLE) $(SRC_SH)
 
 $(EXECUTABLE): $(OBJ_C)
-    $(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-    rm -f $(OBJ_C) $(EXECUTABLE)
+	rm -f $(OBJ_C) $(EXECUTABLE)
 
 run: $(EXECUTABLE)
-    ./$(EXECUTABLE)
+	./$(EXECUTABLE)
 
 .PHONY: all clean run
