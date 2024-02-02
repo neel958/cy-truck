@@ -1,20 +1,8 @@
 #include "main.h"
 
-#define TAILLE_BUFFER 4096
 
 
-typedef struct AVL {
-    int id;
-    float dist_min;
-    float dist_max;
-    float dist_moy;
-    float diff;
-    struct AVL *fg;
-    struct AVL *fd;
-    int h;
-}*pArbre;
-
-int max(int a, int b) {         // Retourne le maximum entre deux nombres passés en paramètres
+int max(int a, int b) { 
   if (a > b) {
     return a;
   } 
@@ -23,7 +11,7 @@ int max(int a, int b) {         // Retourne le maximum entre deux nombres passé
   }
 }
 
-int min(int a, int b) {         // Retourne le minimum entre deux nombres passés en paramètres
+int min(int a, int b) {         
   if (a < b) {
     return a;
   } 
@@ -33,7 +21,7 @@ int min(int a, int b) {         // Retourne le minimum entre deux nombres passé
 }
 
 
-pArbre rotationGauche(pArbre a) {
+pArbre rotationgauche(pArbre a) {
     pArbre pivot = a->fd;
     a->fd = pivot->fg;
     pivot->fg = a;
@@ -48,7 +36,7 @@ pArbre rotationGauche(pArbre a) {
 
 
 
-pArbre rotationDroite(pArbre a) {
+pArbre rotationdroite(pArbre a) {
     pArbre pivot = a->fg;
     a->fg = pivot->fd;
     pivot->fd = a;
@@ -63,16 +51,16 @@ pArbre rotationDroite(pArbre a) {
 
 
 pArbre doubleRotationGauche(pArbre a) {
-    a->fd = rotationDroite(a->fd); // Rotation droite du fils droit de a puis rotation gauche de a
-    a = rotationGauche(a);
+    a->fd = rotationdroite(a->fd); // Rotation droite du fils droit de a puis rotation gauche de a
+    a = rotationgauche(a);
     return a;
 }
 
 
 
 pArbre doubleRotationDroite(pArbre a) {
-    a->fg = rotationGauche(a->fg); // Rotation gauche du fils gauche de a
-    a = rotationDroite(a); // Rotation droite de a
+    a->fg = rotationgauche(a->fg); // Rotation gauche du fils gauche de a
+    a = rotationdroite(a); // Rotation droite de a
     return a;
 }
 
@@ -81,7 +69,7 @@ pArbre equilibrerAVL(pArbre a) {
     if (a->h >= 2) {
         // Sous-arbre droit plus profond
         if (a->fd->h >= 0) {
-            return rotationGauche(a);
+            return rotationgauche(a);
         } 
         else {
             return doubleRotationGauche(a);
@@ -90,7 +78,7 @@ pArbre equilibrerAVL(pArbre a) {
     else if (a->h <= -2) {
         // Sous-arbre gauche plus profond
         if (a->fg->h <= 0) {
-            return rotationDroite(a);
+            return rotationdroite(a);
         }
         else {
             return doubleRotationDroite(a);
@@ -115,7 +103,7 @@ pArbre creerNoeud(int id, float diff, float max, float min, float moy) {
         nouveau->fd = NULL;
     } 
     else {
-        fprintf(stderr, "Erreur d'allocation dynamique pour le nouveau nœud.\n");
+        printf("erreur d'allocation dynamique\n");
     }
     return nouveau;
 }
@@ -157,18 +145,16 @@ pArbre insertionAVL(pArbre x, int id, float diff, float max, float min, float mo
 
 //fonction pour extraire la 5 eme colonne du fichier data.csv et les inserer dans un avl
 
-void extrairecol5(pArbre *a, FILE *fichier) {
+void extrairecol(pArbre *a, FILE *fichier) {
     if (a == NULL || fichier == NULL) {
         printf("Erreur, pointeur nul \n");
         return;
     }
-
-    char ligne[TAILLE_BUFFER];
-    int h;
+    float min, moy, max, diff;
     int id;
-    float mini, moy, maxi;
     int i = 0;
-
+    int h;
+    char ligne[100];
     while (fgets(ligne, sizeof(ligne), fichier) != NULL) {
         char *token = strtok(ligne, "\n");
         int colonne = 1;
@@ -177,26 +163,30 @@ void extrairecol5(pArbre *a, FILE *fichier) {
             char *token2 = strtok(token, ";");
 
             while (token2 != NULL) {
-                if (colonne == 1) {
+                switch (colonne)
+                {
+                case 1:
                     id = atoi(token2);
-                } 
-                else if (colonne == 2) {
-                    mini = atof(token2);
-                } 
-                else if (colonne == 3) {
+                    break;
+                case 2:
+                    min = atof(token2);
+                    break;
+                case 3:
                     moy = atof(token2);
-                } 
-                else if (colonne == 4) {
-                    maxi = atof(token2);
-                } 
-                else if (colonne == 5) {
-                    float diff = atof(token2);
+                    break;
+                case 4:
+                    max = atof(token2);
+                    break;
+                case 5:
+                    diff = atof(token2);
                     i++;
-                    *a = insertionAVL(*a, id, diff, maxi, mini, moy, &h);
-                }
-
+                    *a = insertionAVL(*a, id, diff, max, min, moy, &h);
+                    break;
+                default:
+                    break;
+                } 
                 token2 = strtok(NULL, ";");
-                colonne++;
+                colonne = colonne + 1;
             }
 
             token = strtok(NULL, "\n");
@@ -208,18 +198,18 @@ void extrairecol5(pArbre *a, FILE *fichier) {
 
 
 
-void parcoursDecroissant(pArbre a, FILE *fichierSortie, int *i, const int lim) {
-    if (a == NULL || fichierSortie == NULL || i == NULL) {
+void parcoursDecroissant(pArbre a, FILE *f, int *i) {
+    if (a == NULL || f == NULL || i == NULL) {
         return;
     }
 
-    if (*i <= lim) {
-        parcoursDecroissant(a->fd, fichierSortie, i, lim);
-        if (*i <= lim) {
-            fprintf(fichierSortie, "%d;%d;%.3f;%.3f;%.3f;%.3f\n", *i, a->id, a->dist_min, a->dist_moy, a->dist_max, a->diff);
+    if (*i <= 50) {
+        parcoursDecroissant(a->fd, f, i);
+        if (*i <= 50) {
+            fprintf(f, "%d;%d;%.3f;%.3f;%.3f;%.3f\n", *i, a->id, a->dist_min, a->dist_moy, a->dist_max, a->diff);
             (*i)++;
         }
-        parcoursDecroissant(a->fg, fichierSortie, i, lim);
+        parcoursDecroissant(a->fg, f, i);
     }
 }
 
@@ -244,14 +234,11 @@ int main() {
     f2 = fopen("data_s.csv", "w");
     if (f2 == NULL) {
         printf("Erreur");
-        fclose(f1);
         return 1;
     }
-
-    extrairecol5(&a, f1);
-
-    int compteur = 1;
-    parcoursDecroissant(a, f2, &compteur, 50);
+    extrairecol(&a, f1);
+    int b = 1;
+    parcoursDecroissant(a, f2, &b);
 
     fclose(f1);
     fclose(f2);

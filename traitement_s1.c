@@ -1,93 +1,83 @@
 #include "main.h"
    
 
-struct trajet {
-    int id;
-    float min;
-    float max;
-    float somme;
-    int count;
-    float moyenne;
-    float difference;
-};
+
 
 int main() {
-    FILE *input = fopen("data.csv", "r");
-    if (input == NULL) { 
-        fprintf(stderr, "Impossible d'ouvrir <<data.csv>> \n");
+    FILE *f1 = fopen("data.csv", "r");
+    if (f1 == NULL) { 
+        printf("Erreur lors de l'ouverture de <<data.csv>> \n");
         return 1;
     }
     
-    FILE *output = fopen("data_temp_s.csv", "w+");
-    if (output == NULL) {
-        fprintf(stderr, "Impossible d'ouvrir <<data_temp_.csv>> \n");
-        fclose(input);
+    FILE *f2 = fopen("data_temp_s.csv", "w+");
+    if (f2 == NULL) {
+        printf("Erreur lors de l'ouverture de <<data_temp_s.csv>> \n");
+        fclose(f1);
         return 1;
     }
 
-    // Variables pour gérer dynamiquement la mémoire
-    int max_id = -1;
-    struct trajet *stats = NULL;
-    int lineNumber = 1;
+    int id_maximum = -1;
+    struct trajet *trajet = NULL;
+    int z = 1; // nombre de ligne
 
     char line[100];
-    while (fgets(line, sizeof(line), input)) {
-        if (lineNumber == 1) {
-                lineNumber++;
+    while (fgets(line, sizeof(line), f1)) {
+        if (z == 1) {
+                z++;
                 continue;
             }     
         int id; 
         float value;
         if (sscanf(line, "%d;%f", &id, &value) != 2) {
-            fprintf(stderr, "Erreur lors de la lecture de la ligne : %s", line);
-            continue; // Ignorer la ligne incorrecte et passer à la suivante
+            printf("Impossible de lire la ligne : %s", line);
+            continue; // continuer et ignorer si il y a un probleme
         }
 
-        // Vérifier si l'identifiant est dans la plage attendue
+        // Verifier si l'id est > 0
         if (id >= 0) {
-            // Mettre à jour le plus grand identifiant rencontré
-            if (id > max_id) {
-                max_id = id;
+            // Mettre à jour le + grand
+            if (id > id_maximum) {
+                id_maximum = id;
             }
 
             // Réallouer dynamiquement la mémoire si nécessaire
-            stats = realloc(stats, (max_id + 1) * sizeof(struct trajet));
+            trajet = realloc(trajet, (id_maximum + 1) * sizeof(struct trajet));
 
-            // Initialiser à zéro si l'élément est nouvellement alloué
-            if (stats[id].count == 0) {
-                stats[id].id = id;
-                stats[id].min = value;
-                stats[id].max = value;
-                stats[id].somme = value;
-                stats[id].count = 1;
+            // Initialiser
+            if (trajet[id].count == 0) {
+                trajet[id].id = id;
+                trajet[id].min = value;
+                trajet[id].max = value;
+                trajet[id].somme = value;
+                trajet[id].count = 1;
             } 
             else {
-                // Mettre à jour les statistiques
-                if (value < stats[id].min) {
-                    stats[id].min = value;
+                if (value < trajet[id].min) {
+                    trajet[id].min = value;
                 }
-                if (value > stats[id].max) {
-                    stats[id].max = value;
+                if (value > trajet[id].max) {
+                    trajet[id].max = value;
                 }
-                stats[id].somme += value;
-                stats[id].count++;
+                trajet[id].somme += value;
+                trajet[id].count++;
             }
         }
     }
 
-    for (int i = 0; i <= max_id; i++) {
-        if (stats[i].count > 0) {
-            stats[i].moyenne = (float)stats[i].somme / stats[i].count;
-            stats[i].difference = (float)stats[i].max - (float)stats[i].min;
-            fprintf(output, "%d;%.3f;%.2f;%.3f;%.3f\n", stats[i].id, stats[i].min, stats[i].moyenne, stats[i].max, stats[i].difference);
+    for (int i = 0; i <= id_maximum; i++) {
+        if (trajet[i].count > 0) {
+            trajet[i].moyenne = trajet[i].somme / trajet[i].count;
+            trajet[i].difference = trajet[i].max - trajet[i].min;
+            fprintf(f2, "%d;%.3f;%.2f;%.3f;%.3f\n", trajet[i].id, trajet[i].min, trajet[i].moyenne, trajet[i].max, trajet[i].difference);
         }
     }
 
     // Libérer la mémoire allouée dynamiquement
-    free(stats);
+    free(trajet);
 
-    fclose(input);
-    fclose(output);
+    fclose(f1);
+    fclose(f2);
 
    
 

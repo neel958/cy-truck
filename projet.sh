@@ -21,11 +21,11 @@ for arg in "$@" ; do
 if [ "$arg" = "-h" ] ; then
 echo "Format d'utilisation : $0 chemin_du_fichier_csv traitement1 traitement2..."
 echo "Les différentes options de traitement :"
-echo "-traitement [D1] :.............................."
-echo "-traitement [D2] :.............................."
-echo "-traitement [L] :..............................."
-echo "-traitement [T] :..............................."
-echo "-traitement [S] :..............................."
+echo "-traitement [D1] -Récupérer les 10 conducteurs avec le plus de trajet et afficher le graphique correspondant."
+echo "-traitement [D2] -Récupérer les 10 conducteurs avec les plus grandes distances parcourues et afficher le graphique correspondant."
+echo "-traitement [L]  -Récupérer les 10 identifiants de route avec les plus grandes distances et afficher le graphique correspondant."
+echo "-traitement [T]  -Récupérer les 10 villes avec le plus de trajets qui parcourent ces dernières et afficher le graphique correspondant"
+echo "-traitement [S]  -Récupérer les identifiants de route avec les 50 plus grandes distances maximales, minimales et moyennes et afficher le graphique correspondant."
 exit 0
 fi
 done
@@ -84,16 +84,19 @@ gnuplot "graphique_l.gp" ;;
 
 
 awk -F";" ' FNR > 1 {print $1 ";" $5}' "$dossier_temp" > data_temp_s.csv
-./progc/traitement_s1
-./progc/traitement_s2
+gcc -o traitement_s1 traitement_s1.c
+gcc -o traitement_s2 traitement_s2.c
+./traitement_s1
+./traitement_s2
 gnuplot "graphique_s.gp" ;;
 
 
 #Traitement [T]
 
 -T)
-
-
+gcc -o traitement_t traitement_t.c
+./traitement_t
+gnuplot "graphique_t.gp"
 esac
 
 temps_fin=$(date +%s)
